@@ -80,10 +80,12 @@ enum WeatherCondition {
 model User {
   id                String           @id @default(cuid())
   email             String           @unique
-  password          String
+  password          String?
   firstName         String
   lastName          String
-  role              UserRole
+  role              UserRole         @default(FieldStaff)
+  emailVerified     DateTime?
+  image             String?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   
@@ -93,17 +95,22 @@ model User {
   projectsArchitect Project[]        @relation("Architect")
   projectsEngineer  Project[]        @relation("Engineer")
   projectTeams      ProjectTeam[]
-  rfisSubmitted     RFI[]            @relation("SubmittedBy")
-  rfisAssigned      RFI[]            @relation("AssignedTo")
-  rfiResponses      RFIResponse[]
-  rfiComments       RFIComment[]
-  dailyReports      DailyReport[]
-  documentsUploaded Document[]       @relation("UploadedBy")
-  documentVersions  DocumentVersion[]
+  rfisSubmitted        RFI[]                @relation("SubmittedBy")
+  rfisAssigned         RFI[]                @relation("AssignedTo")
+  rfiResponses         RFIResponse[]
+  rfiComments          RFIComment[]
+  submittalsSubmitted  Submittal[]          @relation("SubmittedBy")
+  submittalsAssigned   Submittal[]          @relation("AssignedTo")
+  submittalResponses   SubmittalResponse[]
+  submittalComments    SubmittalComment[]
+  dailyReports         DailyReport[]
+  documentsUploaded    Document[]           @relation("UploadedBy")
+  documentVersions     DocumentVersion[]
   
   // NextAuth fields
   accounts          Account[]
   sessions          Session[]
+  name              String?
 }
 
 model Project {
@@ -138,6 +145,7 @@ model Project {
   // Relations
   team                ProjectTeam[]
   rfis                RFI[]
+  submittals          Submittal[]
   dailyReports        DailyReport[]
   documents           Document[]
 }
@@ -254,6 +262,109 @@ model DailyReport {
   submittedBy             User             @relation(fields: [submittedById], references: [id])
   
   @@unique([projectId, date])
+}
+
+model Submittal {
+  id                 String              @id @default(cuid())
+  submittalNumber    String              @unique
+  title              String
+  specSection        String?
+  type               SubmittalType       @default(ProductData)
+  description        String?
+  status             SubmittalStatus     @default(ContractorReview)
+  reviewStatus       ReviewStatus?
+  priority           RFIPriority         @default(Normal)
+  
+  // Dates
+  submittedDate      DateTime            @default(now())
+  requiredOnSiteDate DateTime?
+  dueDate            DateTime?
+  approvedDate       DateTime?
+  
+  // Relationships
+  projectId          String
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  submittedById      String
+  submittedBy        User                @relation("SubmittedBy", fields: [submittedById], references: [id])
+  
+  assignedToId       String?
+  assignedTo         User?               @relation("AssignedTo", fields: [assignedToId], references: [id])
+  
+  // Lead time
+  leadTimeDays       Int?
+  
+  // Workflow tracking
+  currentStep        String              @default("contractor_review")
+  
+  // Review comments
+  reviewComments     String?
+  
+  // Versions and responses
+  responses          SubmittalResponse[]
+  comments           SubmittalComment[]
+  
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+model SubmittalResponse {
+  id            String     @id @default(cuid())
+  submittalId   String
+  submittal     Submittal  @relation(fields: [submittalId], references: [id], onDelete: Cascade)
+  
+  response      String     @db.Text
+  reviewStatus  ReviewStatus
+  isDraft       Boolean    @default(false)
+  
+  respondedById String
+  respondedBy   User       @relation(fields: [respondedById], references: [id])
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model SubmittalComment {
+  id          String    @id @default(cuid())
+  submittalId String
+  submittal   Submittal @relation(fields: [submittalId], references: [id], onDelete: Cascade)
+  
+  comment     String    @db.Text
+  
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+}
+
+enum SubmittalType {
+  ProductData
+  ShopDrawings
+  Samples
+  MockUps
+  DesignData
+  TestReports
+  Certificates
+  Manuals
+  Warranties
+  Other
+}
+
+enum SubmittalStatus {
+  ContractorReview
+  SubmittedToArchitect
+  ArchitectReview
+  EngineerReview
+  OwnerReview
+  FinalApproval
+  Closed
+}
+
+enum ReviewStatus {
+  Approved
+  ApprovedAsNoted
+  ReviseAndResubmit
+  Rejected
 }
 
 model Document {

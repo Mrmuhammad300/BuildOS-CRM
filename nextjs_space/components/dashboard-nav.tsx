@@ -21,6 +21,7 @@ import {
   MessageSquare,
   FileText,
   FileStack,
+  ClipboardCheck,
   User,
   LogOut,
   Menu,
@@ -31,6 +32,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'RFIs', href: '/rfis', icon: MessageSquare },
+  { name: 'Submittals', href: '/submittals', icon: ClipboardCheck },
   { name: 'Daily Reports', href: '/daily-reports', icon: FileText },
   { name: 'Documents', href: '/documents', icon: FileStack },
 ];

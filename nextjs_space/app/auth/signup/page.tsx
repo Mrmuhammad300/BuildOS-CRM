@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { HardHat, Loader2 } from 'lucide-react';
+import { HardHat, Loader2, Chrome } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -198,6 +198,26 @@ export default function SignupPage() {
             )}
           </Button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-4 text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full h-11 border-2"
+          onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+          disabled={loading}
+        >
+          <Chrome className="mr-2 h-5 w-5 text-blue-600" />
+          Sign up with Google
+        </Button>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">

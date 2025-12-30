@@ -1,0 +1,200 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+
+type User = {
+  id: string;
+  firstName: string;
+  lastName: string;
+};
+
+export default function NewProjectPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    name: '', client: '', projectNumber: '', address: '', city: '', state: '', zipCode: '',
+    startDate: '', estimatedCompletion: '', budget: '', status: 'PreConstruction', phase: 'Planning',
+    description: '', projectManagerId: '', superintendentId: '', architectId: '', engineerId: '',
+  });
+
+  useEffect(() => {
+    fetch('/api/users').then(r => { if (r.ok) r.json().then(d => setUsers(d?.users ?? [])); });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Failed to create project');
+        setLoading(false);
+        return;
+      }
+      router.push(`/projects/${data.project.id}`);
+    } catch (err) {
+      setError('An error occurred');
+      setLoading(false);
+    }
+  };
+
+  const projectManagers = users?.filter(u => u && (u as any).role === 'ProjectManager' || (u as any).role === 'Admin') ?? [];
+  const superintendents = users?.filter(u => u && (u as any).role === 'Superintendent') ?? [];
+  const architects = users?.filter(u => u && (u as any).role === 'Architect') ?? [];
+  const engineers = users?.filter(u => u && (u as any).role === 'Engineer') ?? [];
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <Link href="/projects"><Button variant="ghost" className="mb-4"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button></Link>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Create New Project</CardTitle>
+          <CardDescription>Enter project details</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">{error}</div>}
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Project Name *</Label>
+                  <Input id="name" placeholder="Downtown Office" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="projectNumber">Project Number *</Label>
+                  <Input id="projectNumber" placeholder="PRJ-2024-001" value={formData.projectNumber} onChange={(e) => setFormData({ ...formData, projectNumber: e.target.value })} required disabled={loading} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client">Client *</Label>
+                <Input id="client" placeholder="Acme Corp" value={formData.client} onChange={(e) => setFormData({ ...formData, client: e.target.value })} required disabled={loading} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea id="description" placeholder="Project scope..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} disabled={loading} rows={3} />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Location</h3>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address *</Label>
+                <Input id="address" placeholder="123 Main St" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} required disabled={loading} />
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input id="city" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State</Label>
+                  <Input id="state" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">ZIP</Label>
+                  <Input id="zipCode" value={formData.zipCode} onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })} disabled={loading} />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Schedule & Budget</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Start *</Label>
+                  <Input id="startDate" type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} required disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="estimatedCompletion">Est. Completion *</Label>
+                  <Input id="estimatedCompletion" type="date" value={formData.estimatedCompletion} onChange={(e) => setFormData({ ...formData, estimatedCompletion: e.target.value })} required disabled={loading} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="budget">Budget *</Label>
+                  <Input id="budget" type="number" placeholder="5000000" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: e.target.value })} required disabled={loading} />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })} disabled={loading}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PreConstruction">Pre-Construction</SelectItem>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="OnHold">On Hold</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Phase</Label>
+                  <Select value={formData.phase} onValueChange={(v) => setFormData({ ...formData, phase: v })} disabled={loading}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Planning">Planning</SelectItem>
+                      <SelectItem value="Foundation">Foundation</SelectItem>
+                      <SelectItem value="Framing">Framing</SelectItem>
+                      <SelectItem value="MEP">MEP</SelectItem>
+                      <SelectItem value="Finishing">Finishing</SelectItem>
+                      <SelectItem value="Closeout">Closeout</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Team</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  { key: 'projectManagerId', label: 'Project Manager', options: projectManagers },
+                  { key: 'superintendentId', label: 'Superintendent', options: superintendents },
+                  { key: 'architectId', label: 'Architect', options: architects },
+                  { key: 'engineerId', label: 'Engineer', options: engineers },
+                ].map(({ key, label, options }) => (
+                  <div key={key} className="space-y-2">
+                    <Label>{label}</Label>
+                    <Select value={formData[key as keyof typeof formData] as string} onValueChange={(v) => setFormData({ ...formData, [key]: v })} disabled={loading}>
+                      <SelectTrigger><SelectValue placeholder={`Select ${label.toLowerCase()}`} /></SelectTrigger>
+                      <SelectContent>
+                        
+                        {options?.map((u: any) => <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <Button type="submit" className="flex-1 bg-gradient-to-r from-blue-600 to-orange-500" disabled={loading}>
+                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : <><Save className="mr-2 h-4 w-4" />Create</>}
+              </Button>
+              <Link href="/projects"><Button type="button" variant="outline" disabled={loading}>Cancel</Button></Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

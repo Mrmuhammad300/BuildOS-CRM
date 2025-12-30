@@ -1,0 +1,301 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  FolderKanban,
+  MessageSquare,
+  FileText,
+  DollarSign,
+  Users,
+  AlertCircle,
+  TrendingUp,
+  Plus,
+  ArrowRight,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+
+type Project = {
+  id: string;
+  name: string;
+  client: string;
+  projectNumber: string;
+  status: string;
+  phase: string;
+  budget: number;
+  startDate: string;
+};
+
+type DashboardStats = {
+  totalProjects: number;
+  activeProjects: number;
+  openRFIs: number;
+  recentReports: number;
+  totalBudget: number;
+  criticalRFIs: number;
+};
+
+export default function DashboardPage() {
+  const { data: session } = useSession() || {};
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentProjects, setRecentProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [statsRes, projectsRes] = await Promise.all([
+        fetch('/api/dashboard/stats'),
+        fetch('/api/projects?limit=5'),
+      ]);
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
+      }
+
+      if (projectsRes.ok) {
+        const projectsData = await projectsRes.json();
+        setRecentProjects(projectsData?.projects ?? []);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statCards = [
+    {
+      title: 'Active Projects',
+      value: stats?.activeProjects ?? 0,
+      total: stats?.totalProjects ?? 0,
+      icon: FolderKanban,
+      color: 'from-blue-500 to-blue-600',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-600',
+    },
+    {
+      title: 'Open RFIs',
+      value: stats?.openRFIs ?? 0,
+      subtitle: `${stats?.criticalRFIs ?? 0} critical`,
+      icon: MessageSquare,
+      color: 'from-orange-500 to-orange-600',
+      bgColor: 'bg-orange-50',
+      textColor: 'text-orange-600',
+    },
+    {
+      title: 'Daily Reports',
+      value: stats?.recentReports ?? 0,
+      subtitle: 'this week',
+      icon: FileText,
+      color: 'from-green-500 to-green-600',
+      bgColor: 'bg-green-50',
+      textColor: 'text-green-600',
+    },
+    {
+      title: 'Total Budget',
+      value: `$${((stats?.totalBudget ?? 0) / 1000000).toFixed(1)}M`,
+      subtitle: 'across projects',
+      icon: DollarSign,
+      color: 'from-purple-500 to-purple-600',
+      bgColor: 'bg-purple-50',
+      textColor: 'text-purple-600',
+    },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Active':
+        return 'bg-green-100 text-green-700';
+      case 'PreConstruction':
+        return 'bg-blue-100 text-blue-700';
+      case 'OnHold':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'Completed':
+        return 'bg-gray-100 text-gray-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getPhaseColor = (phase: string) => {
+    const colors: { [key: string]: string } = {
+      Planning: 'bg-slate-100 text-slate-700',
+      Foundation: 'bg-blue-100 text-blue-700',
+      Framing: 'bg-orange-100 text-orange-700',
+      MEP: 'bg-purple-100 text-purple-700',
+      Finishing: 'bg-green-100 text-green-700',
+      Closeout: 'bg-gray-100 text-gray-700',
+    };
+    return colors[phase] ?? 'bg-gray-100 text-gray-700';
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {session?.user?.name}</h1>
+        <p className="text-gray-600">Manage your construction projects efficiently</p>
+      </motion.div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {statCards.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
+                      <Icon className={`w-6 h-6 ${stat.textColor}`} />
+                    </div>
+                    {stat.subtitle && (
+                      <Badge variant="outline" className="text-xs">
+                        {stat.subtitle}
+                      </Badge>
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+                  <p className="text-sm text-gray-600">{stat.title}</p>
+                  {stat.total && (
+                    <p className="text-xs text-gray-500 mt-1">of {stat.total} total</p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Recent Projects */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Projects</CardTitle>
+              <CardDescription>Your latest construction projects</CardDescription>
+            </div>
+            <Link href="/projects/new">
+              <Button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600">
+                <Plus className="w-4 h-4 mr-2" />
+                New Project
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading projects...</div>
+            ) : recentProjects?.length === 0 ? (
+              <div className="text-center py-8">
+                <FolderKanban className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">No projects yet</p>
+                <Link href="/projects/new">
+                  <Button>Create your first project</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentProjects?.map((project) => (
+                  <Link key={project.id} href={`/projects/${project.id}`}>
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all bg-white group">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {project.name}
+                          </h3>
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status === 'PreConstruction' ? 'Pre-Construction' : project.status === 'OnHold' ? 'On Hold' : project.status}
+                          </Badge>
+                          <Badge variant="outline" className={getPhaseColor(project.phase)}>
+                            {project.phase}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <span className="flex items-center">
+                            <Users className="w-4 h-4 mr-1" />
+                            {project.client}
+                          </span>
+                          <span className="flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            ${(project.budget / 1000000).toFixed(1)}M
+                          </span>
+                          <span className="text-gray-500">{project.projectNumber}</span>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </Link>
+                ))}
+                {recentProjects?.length > 0 && (
+                  <Link href="/projects">
+                    <Button variant="outline" className="w-full">
+                      View All Projects
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        <Link href="/rfis">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <CardContent className="p-6">
+              <MessageSquare className="w-8 h-8 text-orange-600 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">View RFIs</h3>
+              <p className="text-sm text-gray-600">Manage requests for information</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/daily-reports">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <CardContent className="p-6">
+              <FileText className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-green-600 transition-colors">Daily Reports</h3>
+              <p className="text-sm text-gray-600">Submit and view field reports</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/documents">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <CardContent className="p-6">
+              <FileText className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Documents</h3>
+              <p className="text-sm text-gray-600">Access project documentation</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </motion.div>
+    </div>
+  );
+}

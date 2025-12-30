@@ -1,0 +1,327 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/construction_crm_platform/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  Admin
+  ProjectManager
+  Superintendent
+  FieldStaff
+  Architect
+  Engineer
+  Owner
+}
+
+enum ProjectStatus {
+  PreConstruction
+  Active
+  OnHold
+  Completed
+}
+
+enum ProjectPhase {
+  Planning
+  Foundation
+  Framing
+  MEP
+  Finishing
+  Closeout
+}
+
+enum RFIStatus {
+  Open
+  InReview
+  DraftResponse
+  OfficialResponse
+  Closed
+}
+
+enum RFIPriority {
+  Low
+  Normal
+  High
+  Critical
+}
+
+enum DocumentCategory {
+  Contracts
+  Drawings
+  Specifications
+  Photos
+  Reports
+  Other
+}
+
+enum Discipline {
+  Architectural
+  Structural
+  MEP
+  Civil
+  General
+}
+
+enum WeatherCondition {
+  Clear
+  PartlyCloudy
+  Cloudy
+  Rain
+  Snow
+  Fog
+  Wind
+}
+
+model User {
+  id                String           @id @default(cuid())
+  email             String           @unique
+  password          String
+  firstName         String
+  lastName          String
+  role              UserRole
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  projectsManaged   Project[]        @relation("ProjectManager")
+  projectsSupervised Project[]       @relation("Superintendent")
+  projectsArchitect Project[]        @relation("Architect")
+  projectsEngineer  Project[]        @relation("Engineer")
+  projectTeams      ProjectTeam[]
+  rfisSubmitted     RFI[]            @relation("SubmittedBy")
+  rfisAssigned      RFI[]            @relation("AssignedTo")
+  rfiResponses      RFIResponse[]
+  rfiComments       RFIComment[]
+  dailyReports      DailyReport[]
+  documentsUploaded Document[]       @relation("UploadedBy")
+  documentVersions  DocumentVersion[]
+  
+  // NextAuth fields
+  accounts          Account[]
+  sessions          Session[]
+}
+
+model Project {
+  id                  String         @id @default(cuid())
+  name                String
+  client              String
+  projectNumber       String         @unique
+  address             String
+  city                String?
+  state               String?
+  zipCode             String?
+  startDate           DateTime
+  estimatedCompletion DateTime
+  actualCompletion    DateTime?
+  budget              Float
+  status              ProjectStatus  @default(PreConstruction)
+  phase               ProjectPhase   @default(Planning)
+  description         String?        @db.Text
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  
+  // Team members
+  projectManagerId    String?
+  projectManager      User?          @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  superintendentId    String?
+  superintendent      User?          @relation("Superintendent", fields: [superintendentId], references: [id])
+  architectId         String?
+  architect           User?          @relation("Architect", fields: [architectId], references: [id])
+  engineerId          String?
+  engineer            User?          @relation("Engineer", fields: [engineerId], references: [id])
+  
+  // Relations
+  team                ProjectTeam[]
+  rfis                RFI[]
+  dailyReports        DailyReport[]
+  documents           Document[]
+}
+
+model ProjectTeam {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String
+  createdAt DateTime @default(now())
+  
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, userId])
+}
+
+model RFI {
+  id                  String       @id @default(cuid())
+  rfiNumber           String       @unique
+  projectId           String
+  subject             String
+  question            String       @db.Text
+  drawingReference    String?
+  specSection         String?
+  priority            RFIPriority  @default(Normal)
+  status              RFIStatus    @default(Open)
+  dueDate             DateTime?
+  costImpact          Boolean      @default(false)
+  scheduleImpact      Boolean      @default(false)
+  estimatedDelayDays  Int?
+  submittedById       String
+  assignedToId        String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  closedAt            DateTime?
+  
+  project             Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  submittedBy         User         @relation("SubmittedBy", fields: [submittedById], references: [id])
+  assignedTo          User?        @relation("AssignedTo", fields: [assignedToId], references: [id])
+  
+  responses           RFIResponse[]
+  comments            RFIComment[]
+  attachments         String[]     @default([])
+  distributionList    String[]     @default([])
+}
+
+model RFIResponse {
+  id          String   @id @default(cuid())
+  rfiId       String
+  response    String   @db.Text
+  respondedById String
+  isDraft     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  rfi         RFI      @relation(fields: [rfiId], references: [id], onDelete: Cascade)
+  respondedBy User     @relation(fields: [respondedById], references: [id])
+}
+
+model RFIComment {
+  id        String   @id @default(cuid())
+  rfiId     String
+  comment   String   @db.Text
+  authorId  String
+  createdAt DateTime @default(now())
+  
+  rfi       RFI      @relation(fields: [rfiId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model DailyReport {
+  id                      String           @id @default(cuid())
+  projectId               String
+  date                    DateTime
+  submittedById           String
+  
+  // Weather
+  weatherCondition        WeatherCondition?
+  temperatureHigh         Float?
+  temperatureLow          Float?
+  precipitation           Float?
+  windSpeed               Float?
+  
+  // Workforce
+  contractorWorkers       Int?             @default(0)
+  subcontractorWorkers    Int?             @default(0)
+  tradesOnSite            String[]         @default([])
+  
+  // Work Performed
+  workPerformed           String?          @db.Text
+  equipmentOnSite         String[]         @default([])
+  materialsDelivered      String[]         @default([])
+  
+  // Safety
+  incidentsCount          Int?             @default(0)
+  nearMissesCount         Int?             @default(0)
+  safetyViolations        String[]         @default([])
+  ppeComplianceStatus     String?
+  
+  // Issues and Delays
+  issuesAndDelays         String?          @db.Text
+  
+  // Photos
+  photos                  String[]         @default([])
+  
+  // Inspections
+  inspectionsConducted    String[]         @default([])
+  
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  
+  project                 Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  submittedBy             User             @relation(fields: [submittedById], references: [id])
+  
+  @@unique([projectId, date])
+}
+
+model Document {
+  id            String            @id @default(cuid())
+  projectId     String
+  filename      String
+  category      DocumentCategory
+  discipline    Discipline
+  cloudStoragePath String
+  isPublic      Boolean           @default(false)
+  isCurrent     Boolean           @default(true)
+  uploadedById  String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy    User              @relation("UploadedBy", fields: [uploadedById], references: [id])
+  versions      DocumentVersion[]
+}
+
+model DocumentVersion {
+  id              String   @id @default(cuid())
+  documentId      String
+  versionNumber   Int
+  cloudStoragePath String
+  isPublic        Boolean  @default(false)
+  changeNotes     String?  @db.Text
+  uploadedById    String
+  createdAt       DateTime @default(now())
+  
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  uploadedBy      User     @relation(fields: [uploadedById], references: [id])
+  
+  @@unique([documentId, versionNumber])
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

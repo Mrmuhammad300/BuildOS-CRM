@@ -30,13 +30,13 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError('Invalid email or password');
-      } else {
-        router.push('/dashboard');
-        router.refresh();
+        setLoading(false);
+      } else if (result?.ok) {
+        // Success - redirect to dashboard
+        window.location.href = '/dashboard';
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

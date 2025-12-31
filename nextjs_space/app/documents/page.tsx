@@ -147,7 +147,18 @@ export default function DocumentsPage() {
                       </div>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline"><Download className="w-4 h-4 mr-2" />Download</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = `/api/documents/${doc.id}/download`;
+                      link.target = '_blank';
+                      link.click();
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />Download
+                  </Button>
                 </div>
               </CardContent>
             </Card>

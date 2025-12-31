@@ -8,6 +8,9 @@ async function main() {
   await prisma.documentVersion.deleteMany();
   await prisma.document.deleteMany();
   await prisma.dailyReport.deleteMany();
+  await prisma.submittalComment.deleteMany();
+  await prisma.submittalResponse.deleteMany();
+  await prisma.submittal.deleteMany();
   await prisma.rFIComment.deleteMany();
   await prisma.rFIResponse.deleteMany();
   await prisma.rFI.deleteMany();
@@ -539,6 +542,150 @@ async function main() {
   });
 
   console.log('Created documents');
+
+  // Create submittals
+  const submittal1 = await prisma.submittal.create({
+    data: {
+      projectId: project1.id,
+      submittalNumber: 'S-001',
+      title: 'Structural Steel Shop Drawings',
+      description: 'Detailed shop drawings for structural steel fabrication including beams, columns, and connections for floors 1-5',
+      type: 'ShopDrawings',
+      specSection: '05 12 00',
+      status: 'ArchitectReview',
+      priority: 'High',
+      dueDate: new Date('2024-12-31'),
+      submittedDate: new Date('2024-12-15'),
+      submittedById: superintendent.id,
+      assignedToId: engineer.id,
+      leadTimeDays: 14,
+    },
+  });
+
+  const submittal2 = await prisma.submittal.create({
+    data: {
+      projectId: project1.id,
+      submittalNumber: 'S-002',
+      title: 'HVAC Equipment Product Data',
+      description: 'Product data for rooftop HVAC units including specifications, dimensions, and performance data',
+      type: 'ProductData',
+      specSection: '23 74 00',
+      status: 'FinalApproval',
+      reviewStatus: 'Approved',
+      priority: 'Normal',
+      dueDate: new Date('2025-01-15'),
+      submittedDate: new Date('2024-12-10'),
+      submittedById: fieldStaff.id,
+      assignedToId: engineer.id,
+      approvedDate: new Date('2024-12-22'),
+      leadTimeDays: 21,
+    },
+  });
+
+  const submittal3 = await prisma.submittal.create({
+    data: {
+      projectId: project2.id,
+      submittalNumber: 'S-003',
+      title: 'Curtain Wall System Samples',
+      description: 'Physical samples of curtain wall system including glazing, framing, and sealants for design review',
+      type: 'Samples',
+      specSection: '08 44 00',
+      status: 'SubmittedToArchitect',
+      priority: 'Critical',
+      dueDate: new Date('2025-01-05'),
+      submittedDate: new Date('2024-12-20'),
+      submittedById: superintendent.id,
+      assignedToId: architect.id,
+      leadTimeDays: 10,
+    },
+  });
+
+  const submittal4 = await prisma.submittal.create({
+    data: {
+      projectId: project2.id,
+      submittalNumber: 'S-004',
+      title: 'Fire Protection System Shop Drawings',
+      description: 'Shop drawings for fire sprinkler system layout and hydraulic calculations',
+      type: 'ShopDrawings',
+      specSection: '21 13 00',
+      status: 'ContractorReview',
+      priority: 'High',
+      dueDate: new Date('2025-01-20'),
+      submittedDate: new Date('2024-12-18'),
+      submittedById: fieldStaff.id,
+      assignedToId: engineer.id,
+      leadTimeDays: 14,
+    },
+  });
+
+  const submittal5 = await prisma.submittal.create({
+    data: {
+      projectId: project3.id,
+      submittalNumber: 'S-005',
+      title: 'Concrete Mix Design Test Reports',
+      description: 'Test reports and certificates for concrete mix designs including 28-day strength tests',
+      type: 'TestReports',
+      specSection: '03 30 00',
+      status: 'ContractorReview',
+      reviewStatus: 'ReviseAndResubmit',
+      priority: 'High',
+      dueDate: new Date('2024-12-28'),
+      submittedDate: new Date('2024-12-12'),
+      submittedById: superintendent.id,
+      assignedToId: engineer.id,
+      leadTimeDays: 7,
+    },
+  });
+
+  console.log('Created submittals');
+
+  // Create submittal responses
+  await prisma.submittalResponse.create({
+    data: {
+      submittalId: submittal2.id,
+      reviewStatus: 'Approved',
+      response: 'All product data meets specifications. Approved for procurement and installation.',
+      respondedById: engineer.id,
+    },
+  });
+
+  await prisma.submittalResponse.create({
+    data: {
+      submittalId: submittal5.id,
+      reviewStatus: 'ReviseAndResubmit',
+      response: 'Test results for 28-day strength are below specified minimum. Please retest and resubmit.',
+      respondedById: engineer.id,
+    },
+  });
+
+  console.log('Created submittal responses');
+
+  // Create submittal comments
+  await prisma.submittalComment.create({
+    data: {
+      submittalId: submittal1.id,
+      comment: 'Please confirm the connection details match the latest structural revisions dated 12/10/2024.',
+      authorId: engineer.id,
+    },
+  });
+
+  await prisma.submittalComment.create({
+    data: {
+      submittalId: submittal1.id,
+      comment: 'Confirmed. All connections are per latest revision. Updated drawings will be uploaded by EOD.',
+      authorId: superintendent.id,
+    },
+  });
+
+  await prisma.submittalComment.create({
+    data: {
+      submittalId: submittal3.id,
+      comment: 'Samples look good. When can we schedule the mock-up installation for final approval?',
+      authorId: architect.id,
+    },
+  });
+
+  console.log('Created submittal comments');
 
   console.log('Seed completed successfully!');
   console.log('\n=== Test Credentials ===');

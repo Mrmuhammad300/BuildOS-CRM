@@ -92,14 +92,7 @@ export default function NewChangeOrderPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-        className="mb-6"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
+      <BackButton fallbackUrl="/change-orders" />
 
       <Card>
         <CardHeader>

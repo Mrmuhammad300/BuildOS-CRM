@@ -241,14 +241,7 @@ export default function SubmittalDetailPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <Button
-        variant="ghost"
-        onClick={() => router.push('/submittals')}
-        className="mb-6"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Submittals
-      </Button>
+      <BackButton fallbackUrl="/submittals" label="Back to Submittals" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}

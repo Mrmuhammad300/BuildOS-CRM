@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BackButton } from '@/components/ui/back-button';
 import { ArrowLeft, Edit, DollarSign, Calendar, MapPin, Users, MessageSquare, FileText, FileStack } from 'lucide-react';
 
 type Project = {
@@ -68,7 +69,7 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <Link href="/projects"><Button variant="ghost" className="mb-4"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button></Link>
+      <BackButton fallbackUrl="/projects" />
       
       <div className="flex justify-between items-start mb-6">
         <div>

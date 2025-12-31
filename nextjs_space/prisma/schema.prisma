@@ -106,6 +106,11 @@ model User {
   dailyReports         DailyReport[]
   documentsUploaded    Document[]           @relation("UploadedBy")
   documentVersions     DocumentVersion[]
+  changeOrdersRequested ChangeOrder[]       @relation("ChangeOrderRequester")
+  changeOrdersApproved  ChangeOrder[]       @relation("ChangeOrderApprover")
+  punchItemsIdentified  PunchItem[]         @relation("PunchItemIdentifier")
+  punchItemsAssigned    PunchItem[]         @relation("PunchItemAssignee")
+  punchItemsVerified    PunchItem[]         @relation("PunchItemVerifier")
   
   // NextAuth fields
   accounts          Account[]
@@ -148,6 +153,8 @@ model Project {
   submittals          Submittal[]
   dailyReports        DailyReport[]
   documents           Document[]
+  changeOrders        ChangeOrder[]
+  punchItems          PunchItem[]
 }
 
 model ProjectTeam {
@@ -399,6 +406,120 @@ model DocumentVersion {
   uploadedBy      User     @relation(fields: [uploadedById], references: [id])
   
   @@unique([documentId, versionNumber])
+}
+
+// Budget & Change Order models
+model ChangeOrder {
+  id                String            @id @default(cuid())
+  changeOrderNumber String            @unique
+  title             String
+  description       String            @db.Text
+  type              ChangeOrderType   @default(Scope)
+  status            ChangeOrderStatus @default(Draft)
+  priority          RFIPriority       @default(Normal)
+  
+  // Financial
+  proposedCost      Float
+  approvedCost      Float?
+  actualCost        Float?
+  
+  // Dates
+  requestedDate     DateTime          @default(now())
+  approvedDate      DateTime?
+  completedDate     DateTime?
+  
+  // Impact
+  scheduleImpact    Int?              // Days added/reduced
+  reason            String?           @db.Text
+  justification     String?           @db.Text
+  
+  // Relations
+  projectId         String
+  project           Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  requestedById     String
+  requestedBy       User              @relation("ChangeOrderRequester", fields: [requestedById], references: [id])
+  
+  approvedById      String?
+  approvedBy        User?             @relation("ChangeOrderApprover", fields: [approvedById], references: [id])
+  
+  attachments       String[]
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// Punch List models
+model PunchItem {
+  id                String           @id @default(cuid())
+  itemNumber        String           @unique
+  title             String
+  description       String           @db.Text
+  location          String
+  trade             String?
+  status            PunchItemStatus  @default(Open)
+  priority          RFIPriority      @default(Normal)
+  
+  // Dates
+  identifiedDate    DateTime         @default(now())
+  dueDate           DateTime?
+  completedDate     DateTime?
+  verifiedDate      DateTime?
+  
+  // Cost tracking
+  estimatedCost     Float?
+  actualCost        Float?
+  
+  // Relations
+  projectId         String
+  project           Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  identifiedById    String
+  identifiedBy      User             @relation("PunchItemIdentifier", fields: [identifiedById], references: [id])
+  
+  assignedToId      String?
+  assignedTo        User?            @relation("PunchItemAssignee", fields: [assignedToId], references: [id])
+  
+  verifiedById      String?
+  verifiedBy        User?            @relation("PunchItemVerifier", fields: [verifiedById], references: [id])
+  
+  attachments       String[]
+  notes             String?          @db.Text
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+// Enums
+enum ChangeOrderType {
+  Scope
+  Schedule
+  Budget
+  Design
+  Unforeseen
+  ClientRequested
+  RegulatoryCompliance
+  Other
+}
+
+enum ChangeOrderStatus {
+  Draft
+  Submitted
+  UnderReview
+  Approved
+  Rejected
+  OnHold
+  Implemented
+}
+
+enum PunchItemStatus {
+  Open
+  InProgress
+  ReadyForReview
+  Completed
+  Verified
+  Deferred
+  Disputed
 }
 
 // NextAuth models

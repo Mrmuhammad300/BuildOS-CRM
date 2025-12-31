@@ -22,6 +22,8 @@ import {
   FileText,
   FileStack,
   ClipboardCheck,
+  DollarSign,
+  CheckCircle,
   User,
   LogOut,
   Menu,
@@ -35,6 +37,8 @@ const navigation = [
   { name: 'Submittals', href: '/submittals', icon: ClipboardCheck },
   { name: 'Daily Reports', href: '/daily-reports', icon: FileText },
   { name: 'Documents', href: '/documents', icon: FileStack },
+  { name: 'Change Orders', href: '/change-orders', icon: DollarSign },
+  { name: 'Punch List', href: '/punch-items', icon: CheckCircle },
 ];
 
 export function DashboardNav() {

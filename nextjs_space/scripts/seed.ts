@@ -7,6 +7,8 @@ async function main() {
   // Clear existing data
   await prisma.documentVersion.deleteMany();
   await prisma.document.deleteMany();
+  await prisma.punchItem.deleteMany();
+  await prisma.changeOrder.deleteMany();
   await prisma.dailyReport.deleteMany();
   await prisma.submittalComment.deleteMany();
   await prisma.submittalResponse.deleteMany();
@@ -686,6 +688,206 @@ async function main() {
   });
 
   console.log('Created submittal comments');
+
+  // Create change orders
+  await prisma.changeOrder.create({
+    data: {
+      changeOrderNumber: 'CO-2024-0001',
+      title: 'Additional HVAC Units for Server Room',
+      description: 'Client requested additional cooling capacity for expanded server room on 3rd floor. Requires installation of two additional rooftop HVAC units and associated ductwork.',
+      type: 'ClientRequested',
+      priority: 'High',
+      status: 'Approved',
+      proposedCost: 45000,
+      approvedCost: 42500,
+      actualCost: 43200,
+      scheduleImpact: 14,
+      reason: 'Client expanded server infrastructure beyond original specifications',
+      justification: 'Additional units necessary to meet increased cooling load requirements and maintain optimal operating temperature for server equipment',
+      projectId: project1.id,
+      requestedById: projectManager.id,
+      approvedById: admin.id,
+      approvedDate: new Date('2024-12-15'),
+      completedDate: new Date('2024-12-28'),
+      attachments: ['change-orders/hvac-proposal.pdf', 'change-orders/hvac-drawings.pdf'],
+    },
+  });
+
+  await prisma.changeOrder.create({
+    data: {
+      changeOrderNumber: 'CO-2024-0002',
+      title: 'Structural Steel Upgrade',
+      description: 'Engineer identified need for heavier structural steel beams on floors 4-6 due to updated load calculations',
+      type: 'Design',
+      priority: 'Critical',
+      status: 'Implemented',
+      proposedCost: 78000,
+      approvedCost: 78000,
+      actualCost: 76500,
+      scheduleImpact: 7,
+      reason: 'Updated structural engineering calculations revealed higher load requirements',
+      justification: 'Necessary to meet building code requirements and ensure structural integrity',
+      projectId: project1.id,
+      requestedById: engineer.id,
+      approvedById: admin.id,
+      approvedDate: new Date('2024-12-05'),
+      completedDate: new Date('2024-12-22'),
+    },
+  });
+
+  await prisma.changeOrder.create({
+    data: {
+      changeOrderNumber: 'CO-2024-0003',
+      title: 'Underground Utility Relocation',
+      description: 'Unexpected underground electrical conduit discovered during excavation, requires relocation and coordination with utility company',
+      type: 'Unforeseen',
+      priority: 'High',
+      status: 'UnderReview',
+      proposedCost: 32000,
+      scheduleImpact: 10,
+      reason: 'Existing underground utilities not shown on as-built drawings',
+      justification: 'Required to safely proceed with foundation work and comply with utility easement requirements',
+      projectId: project2.id,
+      requestedById: superintendent.id,
+    },
+  });
+
+  await prisma.changeOrder.create({
+    data: {
+      changeOrderNumber: 'CO-2024-0004',
+      title: 'Facade Material Substitution',
+      description: 'Substitute originally specified facade panels with upgraded weather-resistant system due to supplier discontinuation',
+      type: 'Design',
+      priority: 'Normal',
+      status: 'Submitted',
+      proposedCost: 15000,
+      scheduleImpact: 0,
+      reason: 'Original facade material discontinued by manufacturer',
+      justification: 'Proposed alternative offers improved weather resistance and similar aesthetic at minimal cost increase',
+      projectId: project2.id,
+      requestedById: architect.id,
+    },
+  });
+
+  console.log('Created change orders');
+
+  // Create punch items
+  await prisma.punchItem.create({
+    data: {
+      itemNumber: 'PI-00001',
+      title: 'Paint touch-up required in lobby',
+      description: 'Multiple areas on lobby walls show paint scuffs and need touch-up. Primarily around door frames and high-traffic areas.',
+      location: 'Building A - Ground Floor - Main Lobby',
+      trade: 'Painting',
+      priority: 'Normal',
+      status: 'Open',
+      estimatedCost: 500,
+      dueDate: new Date('2025-01-15'),
+      projectId: project1.id,
+      identifiedById: architect.id,
+      assignedToId: fieldStaff.id,
+      attachments: ['punch-items/lobby-paint-issues.jpg'],
+    },
+  });
+
+  await prisma.punchItem.create({
+    data: {
+      itemNumber: 'PI-00002',
+      title: 'HVAC vent misaligned in conference room',
+      description: 'Ceiling air vent not properly aligned with ceiling grid. Needs repositioning to match grid pattern.',
+      location: 'Building A - 2nd Floor - Conference Room 201',
+      trade: 'HVAC',
+      priority: 'Low',
+      status: 'InProgress',
+      estimatedCost: 250,
+      actualCost: 275,
+      dueDate: new Date('2025-01-10'),
+      projectId: project1.id,
+      identifiedById: superintendent.id,
+      assignedToId: fieldStaff.id,
+      notes: 'Coordinate with ceiling tile installer',
+    },
+  });
+
+  await prisma.punchItem.create({
+    data: {
+      itemNumber: 'PI-00003',
+      title: 'Electrical outlet not functioning',
+      description: 'Wall outlet in executive office (Room 305) is not providing power. Needs testing and repair.',
+      location: 'Building A - 3rd Floor - Room 305',
+      trade: 'Electrical',
+      priority: 'High',
+      status: 'Completed',
+      estimatedCost: 150,
+      actualCost: 125,
+      dueDate: new Date('2025-01-05'),
+      completedDate: new Date('2024-12-29'),
+      projectId: project1.id,
+      identifiedById: projectManager.id,
+      assignedToId: fieldStaff.id,
+      notes: 'Found loose wire connection. Repaired and tested.',
+    },
+  });
+
+  await prisma.punchItem.create({
+    data: {
+      itemNumber: 'PI-00004',
+      title: 'Door hardware adjustment needed',
+      description: 'Entrance door closer needs adjustment. Door closing too quickly and slamming.',
+      location: 'Building A - Ground Floor - Main Entrance',
+      trade: 'Doors & Hardware',
+      priority: 'Normal',
+      status: 'Verified',
+      estimatedCost: 100,
+      actualCost: 100,
+      dueDate: new Date('2025-01-08'),
+      completedDate: new Date('2024-12-28'),
+      verifiedDate: new Date('2024-12-29'),
+      projectId: project1.id,
+      identifiedById: owner.id,
+      assignedToId: fieldStaff.id,
+      verifiedById: superintendent.id,
+      notes: 'Adjusted closer tension. Tested multiple times. Working properly.',
+    },
+  });
+
+  await prisma.punchItem.create({
+    data: {
+      itemNumber: 'PI-00005',
+      title: 'Floor tile cracked in restroom',
+      description: 'One floor tile in women\'s restroom is cracked and needs replacement.',
+      location: 'Building A - 1st Floor - Women\'s Restroom',
+      trade: 'Tile & Flooring',
+      priority: 'High',
+      status: 'Open',
+      estimatedCost: 350,
+      dueDate: new Date('2025-01-12'),
+      projectId: project1.id,
+      identifiedById: superintendent.id,
+      assignedToId: fieldStaff.id,
+      notes: 'Need to order matching tile',
+    },
+  });
+
+  await prisma.punchItem.create({
+    data: {
+      itemNumber: 'PI-00006',
+      title: 'Window glass has manufacturing defect',
+      description: 'Window in unit 402 has visible manufacturing defect in glass (bubble/distortion). Requires replacement under warranty.',
+      location: 'Building B - 4th Floor - Unit 402',
+      trade: 'Glazing',
+      priority: 'Critical',
+      status: 'Open',
+      estimatedCost: 2500,
+      dueDate: new Date('2025-01-20'),
+      projectId: project2.id,
+      identifiedById: architect.id,
+      notes: 'Contact window supplier for warranty claim. Photo documentation attached.',
+      attachments: ['punch-items/window-defect-402.jpg'],
+    },
+  });
+
+  console.log('Created punch items');
 
   console.log('Seed completed successfully!');
   console.log('\n=== Test Credentials ===');

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BackButton } from '@/components/ui/back-button';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 
 type Project = { id: string; name: string; projectNumber: string };
@@ -49,7 +50,7 @@ export default function NewRFIPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <Link href="/rfis"><Button variant="ghost" className="mb-4"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button></Link>
+      <BackButton fallbackUrl="/rfis" />
       <Card>
         <CardHeader><CardTitle className="text-2xl">Submit New RFI</CardTitle></CardHeader>
         <CardContent>

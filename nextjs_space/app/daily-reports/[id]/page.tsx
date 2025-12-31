@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, User, Cloud, Users, Wrench, Package, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -46,7 +47,7 @@ export default function DailyReportDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <Link href="/daily-reports"><Button variant="ghost" className="mb-4"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button></Link>
+      <BackButton fallbackUrl="/daily-reports" />
       
       <div className="flex justify-between items-start mb-6">
         <div>

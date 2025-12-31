@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -113,6 +114,7 @@ export default function ChangeOrdersPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <BackButton />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Change Orders</h1>
         <Button onClick={() => router.push('/change-orders/new')}>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,6 +41,7 @@ export default function DailyReportsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <BackButton />
       <div className="flex justify-between items-center mb-8">
         <div><h1 className="text-3xl font-bold mb-2">Daily Reports</h1><p className="text-gray-600">Field progress and activity tracking</p></div>
         <Link href="/daily-reports/new"><Button className="bg-gradient-to-r from-blue-600 to-orange-500"><Plus className="w-4 h-4 mr-2" />New Report</Button></Link>

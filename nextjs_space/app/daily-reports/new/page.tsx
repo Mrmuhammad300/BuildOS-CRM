@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,7 +57,7 @@ export default function NewDailyReportPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <Link href="/daily-reports"><Button variant="ghost" className="mb-4"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button></Link>
+      <BackButton fallbackUrl="/daily-reports" />
       <Card>
         <CardHeader><CardTitle className="text-2xl">Submit Daily Report</CardTitle></CardHeader>
         <CardContent>

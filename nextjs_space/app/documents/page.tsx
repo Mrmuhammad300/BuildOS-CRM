@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,6 +98,7 @@ export default function DocumentsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <BackButton />
       <div className="flex justify-between items-center mb-8">
         <div><h1 className="text-3xl font-bold mb-2">Documents</h1><p className="text-gray-600">Project documentation and files</p></div>
         <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -56,6 +57,7 @@ export default function SubmittalsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <BackButton />
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Submittals</h1>

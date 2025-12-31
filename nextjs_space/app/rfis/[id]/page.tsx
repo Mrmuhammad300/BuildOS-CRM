@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BackButton } from '@/components/ui/back-button';
 import { ArrowLeft, Calendar, User, AlertCircle, MessageSquare, Send } from 'lucide-react';
 
 type RFI = {
@@ -67,7 +68,7 @@ export default function RFIDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <Link href="/rfis"><Button variant="ghost" className="mb-4"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button></Link>
+      <BackButton fallbackUrl="/rfis" />
       
       <div className="flex justify-between items-start mb-6">
         <div>

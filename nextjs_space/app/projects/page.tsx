@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BackButton } from '@/components/ui/back-button';
 import {
   Plus,
   Search,
@@ -119,6 +120,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <BackButton />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

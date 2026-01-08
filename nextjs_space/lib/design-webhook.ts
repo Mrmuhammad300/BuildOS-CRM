@@ -4,6 +4,9 @@
  */
 
 export interface DesignTaskPayload {
+  // Action identifier for n8n workflow
+  action: string; // e.g., 'create_design_task', 'submit_design_request'
+  
   // Request identification
   requestId: string;
   requestNumber: string;

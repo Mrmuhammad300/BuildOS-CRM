@@ -68,6 +68,7 @@ export async function POST(
 
         // Prepare payload for external platform
         const payload: DesignTaskPayload = {
+          action: 'create_design_task',
           requestId: designRequest.id,
           requestNumber: designRequest.requestNumber,
           taskId: task.id,

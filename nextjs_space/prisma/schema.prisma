@@ -111,6 +111,9 @@ model User {
   punchItemsIdentified  PunchItem[]         @relation("PunchItemIdentifier")
   punchItemsAssigned    PunchItem[]         @relation("PunchItemAssignee")
   punchItemsVerified    PunchItem[]         @relation("PunchItemVerifier")
+  designRequestsSubmitted DesignRequest[]   @relation("DesignRequestSubmittedBy")
+  designRequestsAssigned  DesignRequest[]   @relation("DesignRequestAssignedTo")
+  designTasksAssigned     DesignTask[]      @relation("DesignTaskAssignedTo")
   
   // NextAuth fields
   properties            Property[]
@@ -157,6 +160,7 @@ model Project {
   changeOrders        ChangeOrder[]
   punchItems          PunchItem[]
   properties          Property[]
+  designRequests      DesignRequest[]
 }
 
 model ProjectTeam {
@@ -645,5 +649,176 @@ model Property {
   @@index([assetType])
   @@index([developmentStage])
   @@index([projectId])
+}
+
+enum DesignRequestStatus {
+  Draft
+  Submitted
+  AIProcessing
+  UnderReview
+  ClientReview
+  RevisionRequired
+  Approved
+  InDesign
+  Rendering
+  Completed
+  Cancelled
+}
+
+enum DesignProjectType {
+  Residential
+  Commercial
+  Industrial
+  MixedUse
+  Renovation
+  LandscapingInterior
+}
+
+enum DesignTimeline {
+  Rush
+  Standard
+  Flexible
+}
+
+enum DesignTaskType {
+  Architectural
+  Structural
+  MEPDesign
+  InteriorDesign
+  Landscaping
+  Rendering
+  ThreeD_Modeling
+  Documentation
+}
+
+enum TaskStatus {
+  Pending
+  Queued
+  Processing
+  Completed
+  Failed
+  Cancelled
+}
+
+model DesignRequest {
+  id                    String                 @id @default(cuid())
+  requestNumber         String                 @unique
+  
+  // Client Information
+  clientName            String
+  clientEmail           String
+  clientPhone           String?
+  
+  // Project Details
+  projectName           String
+  projectType           DesignProjectType
+  description           String                 @db.Text
+  requirements          String                 @db.Text
+  siteDetails           String?                @db.Text
+  budget                Float?
+  timeline              DesignTimeline
+  
+  // Status & Tracking
+  status                DesignRequestStatus    @default(Draft)
+  submittedAt           DateTime?
+  approvedAt            DateTime?
+  completedAt           DateTime?
+  
+  // AI Analysis Results
+  aiAnalysisCompleted   Boolean                @default(false)
+  designConcept         String?                @db.Text
+  styleRecommendations  String?                @db.Text
+  spatialLayout         String?                @db.Text
+  materialSuggestions   String?                @db.Text
+  sustainabilityFeatures String?               @db.Text
+  budgetConsiderations  String?                @db.Text
+  timelineEstimate      String?                @db.Text
+  visualizationPrompt   String?                @db.Text
+  
+  // Design Visualization
+  visualizationUrl      String?
+  driveFileId           String?
+  driveFileLink         String?
+  
+  // Client Feedback
+  revisionNotes         String?                @db.Text
+  revisionCount         Int                    @default(0)
+  
+  // External Platform Integration
+  externalRequestId     String?                // ID from AI design platform
+  externalStatus        String?
+  webhookUrl            String?
+  lastWebhookSync       DateTime?
+  
+  // Timestamps
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  
+  // Relationships
+  projectId             String?
+  project               Project?               @relation(fields: [projectId], references: [id])
+  
+  submittedById         String?
+  submittedBy           User?                  @relation("DesignRequestSubmittedBy", fields: [submittedById], references: [id])
+  
+  assignedToId          String?
+  assignedTo            User?                  @relation("DesignRequestAssignedTo", fields: [assignedToId], references: [id])
+  
+  tasks                 DesignTask[]
+  
+  @@index([status])
+  @@index([projectType])
+  @@index([projectId])
+  @@index([submittedById])
+  @@index([createdAt])
+}
+
+model DesignTask {
+  id                    String                 @id @default(cuid())
+  
+  // Task Details
+  taskType              DesignTaskType
+  title                 String
+  description           String                 @db.Text
+  priority              RFIPriority            @default(Normal)
+  
+  // Status & Tracking
+  status                TaskStatus             @default(Pending)
+  startedAt             DateTime?
+  completedAt           DateTime?
+  
+  // External Platform Integration
+  sentToExternalPlatform Boolean               @default(false)
+  externalTaskId        String?                // ID from AI design platform
+  externalStatus        String?
+  externalResponse      String?                @db.Text
+  webhookPayload        String?                @db.Text
+  webhookResponse       String?                @db.Text
+  lastSyncAt            DateTime?
+  
+  // Results
+  resultUrl             String?
+  resultData            String?                @db.Text
+  resultFiles           String[]               @default([])
+  
+  // Error Handling
+  errorMessage          String?                @db.Text
+  retryCount            Int                    @default(0)
+  
+  // Timestamps
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  
+  // Relationships
+  designRequestId       String
+  designRequest         DesignRequest          @relation(fields: [designRequestId], references: [id], onDelete: Cascade)
+  
+  assignedToId          String?
+  assignedTo            User?                  @relation("DesignTaskAssignedTo", fields: [assignedToId], references: [id])
+  
+  @@index([status])
+  @@index([taskType])
+  @@index([designRequestId])
+  @@index([createdAt])
 }
 

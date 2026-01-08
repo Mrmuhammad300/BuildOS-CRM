@@ -18,6 +18,7 @@ import {
   HardHat,
   LayoutDashboard,
   FolderKanban,
+  Building2,
   MessageSquare,
   FileText,
   FileStack,
@@ -33,6 +34,7 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
+  { name: 'Properties', href: '/properties', icon: Building2 },
   { name: 'RFIs', href: '/rfis', icon: MessageSquare },
   { name: 'Submittals', href: '/submittals', icon: ClipboardCheck },
   { name: 'Daily Reports', href: '/daily-reports', icon: FileText },

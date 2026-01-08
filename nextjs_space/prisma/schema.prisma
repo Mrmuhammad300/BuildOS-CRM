@@ -113,6 +113,7 @@ model User {
   punchItemsVerified    PunchItem[]         @relation("PunchItemVerifier")
   
   // NextAuth fields
+  properties            Property[]
   accounts          Account[]
   sessions          Session[]
   name              String?
@@ -155,6 +156,7 @@ model Project {
   documents           Document[]
   changeOrders        ChangeOrder[]
   punchItems          PunchItem[]
+  properties          Property[]
 }
 
 model ProjectTeam {
@@ -557,3 +559,91 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+// Real Estate Development Enums
+enum AssetType {
+  Residential
+  Multifamily
+  MixedUse
+  Industrial
+  Agricultural
+  SpecialPurpose
+}
+
+enum DevelopmentStage {
+  PreDevelopment
+  Construction
+  Stabilized
+  Exit
+}
+
+enum StatusIndicator {
+  Green
+  Yellow
+  Red
+}
+
+// Real Estate Development Property Model
+model Property {
+  id                      String            @id @default(uuid())
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  // Property Profile
+  name                    String
+  street                  String
+  city                    String
+  state                   String
+  zip                     String
+  assetType               AssetType
+  developmentStage        DevelopmentStage
+  units                   Int?
+  squareFeet              Int?
+  acquisitionDate         DateTime?
+  holdPeriodYears         Int?
+
+  // Executive Summary
+  purchasePrice           Float
+  totalProjectCost        Float
+  equityInvested          Float
+  debtAmount              Float
+  targetIRR               Float?
+  targetCashOnCash        Float?
+  statusIndicator         StatusIndicator   @default(Green)
+
+  // Capital Stack
+  hardCosts               Float             @default(0)
+  softCosts               Float             @default(0)
+  financingCosts          Float             @default(0)
+  contingency             Float             @default(0)
+
+  // Debt Details
+  debtInterestRate        Float?
+  debtTermYears           Int?
+  debtAmortizationYears   Int?
+
+  // Operating Assumptions
+  avgMonthlyRentPerUnit   Float             @default(0)
+  otherIncomeMonthly      Float             @default(0)
+  vacancyRate             Float             @default(0.05)
+  expenseRatio            Float             @default(0.40)
+  annualRentGrowthRate    Float             @default(0.03)
+  annualExpenseGrowthRate Float             @default(0.03)
+
+  // Exit Assumptions
+  exitCapRate             Float             @default(0.06)
+  saleCostPercentage      Float             @default(0.05)
+
+  // Relationships
+  projectId               String?
+  project                 Project?          @relation(fields: [projectId], references: [id])
+  
+  ownerId                 String?
+  owner                   User?             @relation(fields: [ownerId], references: [id])
+
+  // Financial snapshots can be stored separately if needed
+  @@index([assetType])
+  @@index([developmentStage])
+  @@index([projectId])
+}
+

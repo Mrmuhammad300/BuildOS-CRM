@@ -18,39 +18,3 @@ out
 .deploy
 .logs
 *.tsbuildinfo
-
-# Environment variables (contains sensitive secrets)
-.env
-.env.local
-.env.production
-.env.development
-.env*.local
-
-# Database
-*.db
-*.db-journal
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Testing
-coverage/
-.nyc_output/
-
-# Abacus system files
-.abacus.donotdelete

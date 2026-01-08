@@ -100,7 +100,7 @@ export default function SubmittalDetailPage() {
       const res = await fetch(`/api/submittals/${params?.id}`);
       if (res.ok) {
         const data = await res.json();
-        setSubmittal(data);
+        setSubmittal(data.submittal || data);
       } else {
         toast.error('Failed to load submittal');
         router.push('/submittals');
@@ -211,8 +211,20 @@ export default function SubmittalDetailPage() {
     return colors[priority] || 'bg-gray-100 text-gray-800';
   };
 
-  const formatStatus = (status: string) => {
+  const formatStatus = (status: string | null | undefined) => {
+    if (!status) return 'N/A';
     return status.replace(/([A-Z])/g, ' $1').trim();
+  };
+
+  const formatDate = (date: string | null | undefined, formatStr: string = 'MMM dd, yyyy') => {
+    if (!date) return 'N/A';
+    try {
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) return 'Invalid Date';
+      return format(parsedDate, formatStr);
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   if (loading) {
@@ -286,13 +298,13 @@ export default function SubmittalDetailPage() {
                 <div>
                   <Label className="text-sm font-medium">Submitted Date</Label>
                   <p className="mt-1 text-sm">
-                    {format(new Date(submittal.submittedDate), 'MMM dd, yyyy')}
+                    {formatDate(submittal.submittedDate)}
                   </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Due Date</Label>
                   <p className="mt-1 text-sm">
-                    {submittal.dueDate ? format(new Date(submittal.dueDate), 'MMM dd, yyyy') : 'Not set'}
+                    {formatDate(submittal.dueDate) !== 'N/A' ? formatDate(submittal.dueDate) : 'Not set'}
                   </p>
                 </div>
               </div>
@@ -380,7 +392,7 @@ export default function SubmittalDetailPage() {
                                   {formatStatus(response.reviewStatus)}
                                 </Badge>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  {format(new Date(response.createdAt), 'MMM dd, yyyy h:mm a')}
+                                  {formatDate(response.createdAt, 'MMM dd, yyyy h:mm a')}
                                 </p>
                               </div>
                             </div>
@@ -433,7 +445,7 @@ export default function SubmittalDetailPage() {
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {format(new Date(comment.createdAt), 'MMM dd, yyyy h:mm a')}
+                                {formatDate(comment.createdAt, 'MMM dd, yyyy h:mm a')}
                               </p>
                             </div>
                             <p className="text-sm">{comment.comment}</p>

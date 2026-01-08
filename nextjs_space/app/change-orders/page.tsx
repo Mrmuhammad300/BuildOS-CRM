@@ -104,7 +104,8 @@ export default function ChangeOrdersPage() {
     return colors[priority] || 'bg-gray-100 text-gray-800';
   };
 
-  const formatStatus = (status: string) => {
+  const formatStatus = (status: string | null | undefined) => {
+    if (!status) return 'N/A';
     return status.replace(/([A-Z])/g, ' $1').trim();
   };
 

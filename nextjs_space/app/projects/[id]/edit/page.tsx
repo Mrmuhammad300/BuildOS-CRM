@@ -244,10 +244,10 @@ export default function EditProjectPage() {
                 ].map(({ key, label, options }) => (
                   <div key={key} className="space-y-2">
                     <Label>{label}</Label>
-                    <Select value={formData[key as keyof typeof formData] as string} onValueChange={(v) => setFormData({ ...formData, [key]: v })} disabled={loading}>
+                    <Select value={formData[key as keyof typeof formData] as string || "none"} onValueChange={(v) => setFormData({ ...formData, [key]: v === "none" ? "" : v })} disabled={loading}>
                       <SelectTrigger><SelectValue placeholder={`Select ${label.toLowerCase()}`} /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {options?.map((u: User) => <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>)}
                       </SelectContent>
                     </Select>

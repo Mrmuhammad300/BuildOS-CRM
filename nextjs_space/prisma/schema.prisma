@@ -115,11 +115,18 @@ model User {
   designRequestsAssigned  DesignRequest[]   @relation("DesignRequestAssignedTo")
   designTasksAssigned     DesignTask[]      @relation("DesignTaskAssignedTo")
   
+  // AutoBuild AI Relations
+  documentAnalyses        DocumentAnalysis[]
+  crmIntegrations         CRMIntegration[]
+  aiProjectPlans          AIProjectPlan[]
+  
   // NextAuth fields
   properties            Property[]
   accounts          Account[]
   sessions          Session[]
   name              String?
+  phone             String?
+  companyName       String?
 }
 
 model Project {
@@ -161,6 +168,10 @@ model Project {
   punchItems          PunchItem[]
   properties          Property[]
   designRequests      DesignRequest[]
+  
+  // AutoBuild AI Relations
+  documentAnalyses    DocumentAnalysis[]
+  aiProjectPlan       AIProjectPlan?
 }
 
 model ProjectTeam {
@@ -396,6 +407,9 @@ model Document {
   project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   uploadedBy    User              @relation("UploadedBy", fields: [uploadedById], references: [id])
   versions      DocumentVersion[]
+  
+  // AutoBuild AI Relations
+  analyses      DocumentAnalysis[]
 }
 
 model DocumentVersion {
@@ -819,6 +833,132 @@ model DesignTask {
   @@index([status])
   @@index([taskType])
   @@index([designRequestId])
+  @@index([createdAt])
+}
+
+// ==============================
+// AutoBuild AI Features
+// ==============================
+
+enum AnalysisType {
+  General
+  Safety
+  Cost
+  Timeline
+  Compliance
+  Quality
+}
+
+enum CRMProvider {
+  Salesforce
+  HubSpot
+  Zoho
+  Pipedrive
+  Custom
+}
+
+model DocumentAnalysis {
+  id                    String                 @id @default(cuid())
+  
+  // Document Reference
+  documentId            String?
+  document              Document?              @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Project Reference
+  projectId             String
+  project               Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // User Reference
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id])
+  
+  // Analysis Details
+  analysisType          AnalysisType           @default(General)
+  documentText          String                 @db.Text
+  analysisResult        String                 @db.Text
+  aiModel               String?                // e.g., "gpt-4", "minimax"
+  confidence            Float?                 // 0.0 to 1.0
+  
+  // Metadata
+  processingTime        Int?                   // milliseconds
+  tokensUsed            Int?
+  
+  // Timestamps
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  
+  @@index([projectId])
+  @@index([userId])
+  @@index([analysisType])
+  @@index([createdAt])
+}
+
+model CRMIntegration {
+  id                    String                 @id @default(cuid())
+  
+  // User Reference
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Integration Details
+  provider              CRMProvider
+  name                  String                 // User-friendly name
+  apiKey                String?                // Encrypted API key
+  apiSecret             String?                // For OAuth
+  accessToken           String?                // OAuth access token
+  refreshToken          String?                // OAuth refresh token
+  webhookUrl            String?                // For custom integrations
+  
+  // Configuration
+  config                String?                @db.Text // JSON config
+  
+  // Status
+  isActive              Boolean                @default(true)
+  lastSyncAt            DateTime?
+  lastError             String?                @db.Text
+  syncCount             Int                    @default(0)
+  
+  // Timestamps
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  
+  @@index([userId])
+  @@index([provider])
+  @@index([isActive])
+}
+
+model AIProjectPlan {
+  id                    String                 @id @default(cuid())
+  
+  // Project Reference
+  projectId             String                 @unique
+  project               Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // User Reference
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id])
+  
+  // Plan Details
+  planData              String                 @db.Text // JSON structure
+  phases                String                 @db.Text // JSON array of phases
+  milestones            String                 @db.Text // JSON array of milestones
+  riskAnalysis          String?                @db.Text
+  budgetBreakdown       String?                @db.Text // JSON budget data
+  
+  // AI Generation
+  aiModel               String?
+  promptUsed            String?                @db.Text
+  generationTime        Int?                   // milliseconds
+  
+  // Version Control
+  version               Int                    @default(1)
+  
+  // Timestamps
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  
+  @@index([projectId])
+  @@index([userId])
   @@index([createdAt])
 }
 

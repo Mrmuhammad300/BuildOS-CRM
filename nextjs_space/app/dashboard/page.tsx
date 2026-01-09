@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Plus,
   ArrowRight,
+  Calculator,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -266,35 +267,56 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6"
+        className="mt-8"
       >
-        <Link href="/rfis">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <CardContent className="p-6">
-              <MessageSquare className="w-8 h-8 text-orange-600 mb-3 group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">View RFIs</h3>
-              <p className="text-sm text-gray-600">Manage requests for information</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/daily-reports">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <CardContent className="p-6">
-              <FileText className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-green-600 transition-colors">Daily Reports</h3>
-              <p className="text-sm text-gray-600">Submit and view field reports</p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/documents">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <CardContent className="p-6">
-              <FileText className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Documents</h3>
-              <p className="text-sm text-gray-600">Access project documentation</p>
-            </CardContent>
-          </Card>
-        </Link>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <Link href="/rfis">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardContent className="p-6">
+                <MessageSquare className="w-8 h-8 text-orange-600 mb-3 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">View RFIs</h3>
+                <p className="text-sm text-gray-600">Manage requests for information</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/daily-reports">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardContent className="p-6">
+                <FileText className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-green-600 transition-colors">Daily Reports</h3>
+                <p className="text-sm text-gray-600">Submit and view field reports</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/documents">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardContent className="p-6">
+                <FileText className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Documents</h3>
+                <p className="text-sm text-gray-600">Access project documentation</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/roi-calculator">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardContent className="p-6">
+                <Calculator className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-green-600 transition-colors">ROI Calculator</h3>
+                <p className="text-sm text-gray-600">Calculate cost savings</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/accounting/integrations">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50">
+              <CardContent className="p-6">
+                <DollarSign className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors">Accounting</h3>
+                <p className="text-sm text-gray-600">Connect accounting software</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

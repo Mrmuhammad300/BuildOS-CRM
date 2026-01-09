@@ -119,6 +119,8 @@ model User {
   documentAnalyses        DocumentAnalysis[]
   crmIntegrations         CRMIntegration[]
   aiProjectPlans          AIProjectPlan[]
+  accountingIntegrations  AccountingIntegration[]
+  roiCalculations         ROICalculation[]
   
   // NextAuth fields
   properties            Property[]
@@ -172,6 +174,7 @@ model Project {
   // BuildOS AI Relations
   documentAnalyses    DocumentAnalysis[]
   aiProjectPlan       AIProjectPlan?
+  roiCalculations     ROICalculation[]
 }
 
 model ProjectTeam {
@@ -956,6 +959,116 @@ model AIProjectPlan {
   // Timestamps
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+  
+  @@index([projectId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ==============================
+// Accounting & Financial Integration
+// ==============================
+
+enum AccountingProvider {
+  QuickBooks
+  Xero
+  FreshBooks
+  Sage
+  NetSuite
+  Custom
+}
+
+model AccountingIntegration {
+  id                    String                 @id @default(cuid())
+  
+  // User Reference
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Integration Details
+  provider              AccountingProvider
+  name                  String                 // User-friendly name
+  companyId             String?                // Company/Realm ID for multi-tenant accounting systems
+  apiKey                String?                // Encrypted API key
+  apiSecret             String?                // For OAuth
+  accessToken           String?                // OAuth access token
+  refreshToken          String?                // OAuth refresh token
+  webhookUrl            String?                // For custom integrations
+  
+  // Configuration
+  config                String?                @db.Text // JSON config (chart of accounts mapping, etc.)
+  
+  // Sync Settings
+  autoSyncEnabled       Boolean                @default(false)
+  syncFrequency         String?                // e.g., "daily", "weekly", "realtime"
+  
+  // Status
+  isActive              Boolean                @default(true)
+  lastSyncAt            DateTime?
+  lastError             String?                @db.Text
+  syncCount             Int                    @default(0)
+  
+  // Timestamps
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  
+  @@index([userId])
+  @@index([provider])
+  @@index([isActive])
+}
+
+// ==============================
+// ROI Calculator
+// ==============================
+
+enum RiskLevel {
+  Low
+  Medium
+  High
+}
+
+model ROICalculation {
+  id                          String        @id @default(cuid())
+  
+  // Project Reference (optional - can be used for project-specific ROI)
+  projectId                   String?
+  project                     Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // User Reference
+  userId                      String
+  user                        User          @relation(fields: [userId], references: [id])
+  
+  // Project Inputs
+  totalProjectCost            Float
+  projectDurationMonths       Int
+  numberOfDrawingRevisions    Int
+  avgRFIChangeOrderVolume     Float         // Percentage (e.g., 0.15 for 15%)
+  avgLaborCostPerHour         Float
+  teamSize                    Int
+  
+  // Operational Risk Inputs
+  reworkPercentage            Float         // 1-7%
+  takeoffErrorRate            Float         // 1-5%
+  scheduleSlippageWeeks       Int           // 0-6
+  claimsDisputesProbability   RiskLevel
+  
+  // Calculated Savings (stored for historical tracking)
+  reworkCostSavings           Float?
+  takeoffEfficiencySavings    Float?
+  scheduleCompressionSavings  Float?
+  claimsRiskAvoidanceSavings  Float?
+  
+  // Total ROI
+  totalSavings                Float?
+  roiPercentage               Float?
+  
+  // Metadata
+  calculationName             String?
+  notes                       String?       @db.Text
+  
+  // Timestamps
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @updatedAt
   
   @@index([projectId])
   @@index([userId])

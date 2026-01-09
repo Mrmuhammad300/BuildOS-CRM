@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BackButton } from '@/components/ui/back-button';
 import {
   TrendingUp,
   TrendingDown,
@@ -18,6 +19,7 @@ import {
   AlertTriangle,
   Download,
   Calendar,
+  Clock,
 } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
@@ -180,6 +182,9 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Back Button */}
+      <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -480,7 +485,448 @@ export default function AnalyticsPage() {
           </div>
         </TabsContent>
 
-        {/* Add more tab content as needed */}
+        <TabsContent value="rfis" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>RFI Performance Metrics</CardTitle>
+                <CardDescription>Request for Information statistics</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                  <span className="text-sm font-medium">Total RFIs</span>
+                  <span className="text-2xl font-bold text-blue-600">
+                    {metrics.rfiMetrics.totalRFIs}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                  <span className="text-sm font-medium">Resolved RFIs</span>
+                  <span className="text-2xl font-bold text-green-600">
+                    {metrics.rfiMetrics.resolvedRFIs}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                  <span className="text-sm font-medium">Open RFIs</span>
+                  <span className="text-2xl font-bold text-orange-600">
+                    {metrics.rfiMetrics.openRFIs}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                  <span className="text-sm font-medium">Response Rate</span>
+                  <Badge className="bg-purple-600 text-white">
+                    {formatPercentage(metrics.rfiMetrics.responseRate)}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>RFI Response Times</CardTitle>
+                <CardDescription>Average time to respond to RFIs</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Clock className="h-5 w-5 mr-2 text-blue-600" />
+                      <span className="text-sm font-medium">Average Response Time</span>
+                    </div>
+                    <span className="text-xl font-bold">
+                      {metrics.rfiMetrics.avgResponseTimeDays.toFixed(1)} days
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full"
+                      style={{
+                        width: `${Math.min(
+                          (metrics.rfiMetrics.avgResponseTimeDays / 10) * 100,
+                          100
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Target: ≤ 5 days for optimal performance
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t space-y-2">
+                  <h4 className="text-sm font-semibold">RFI Status Breakdown</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Open</span>
+                      <span className="font-medium">{metrics.rfiMetrics.openRFIs}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">In Progress</span>
+                      <span className="font-medium">
+                        {metrics.rfiMetrics.totalRFIs - metrics.rfiMetrics.resolvedRFIs - metrics.rfiMetrics.openRFIs}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Resolved</span>
+                      <span className="font-medium text-green-600">
+                        {metrics.rfiMetrics.resolvedRFIs}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>RFI Activity Trends</CardTitle>
+              <CardDescription>RFI creation and resolution over time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Bar
+                data={{
+                  labels: trends.trends.rfis.map((d: any) => d.date),
+                  datasets: [
+                    {
+                      label: 'RFIs Created',
+                      data: trends.trends.rfis.map((d: any) => d.count),
+                      backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                      borderColor: 'rgb(59, 130, 246)',
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top' as const,
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        precision: 0,
+                      },
+                    },
+                  },
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="submittals" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Submittal Performance</CardTitle>
+                <CardDescription>Submittal approval metrics</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                  <span className="text-sm font-medium">Total Submittals</span>
+                  <span className="text-2xl font-bold text-purple-600">
+                    {metrics.submittalMetrics.totalSubmittals}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                  <span className="text-sm font-medium">Approved</span>
+                  <span className="text-2xl font-bold text-green-600">
+                    {metrics.submittalMetrics.approvedSubmittals}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                  <span className="text-sm font-medium">Rejected</span>
+                  <span className="text-2xl font-bold text-red-600">
+                    {metrics.submittalMetrics.rejectedSubmittals}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                  <span className="text-sm font-medium">Pending Review</span>
+                  <span className="text-2xl font-bold text-orange-600">
+                    {metrics.submittalMetrics.pendingSubmittals}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Approval Rate & Timeline</CardTitle>
+                <CardDescription>Success metrics for submittal approvals</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Approval Rate</span>
+                    <Badge
+                      className={`${
+                        metrics.submittalMetrics.approvalRate >= 80
+                          ? 'bg-green-600'
+                          : metrics.submittalMetrics.approvalRate >= 60
+                          ? 'bg-orange-600'
+                          : 'bg-red-600'
+                      } text-white`}
+                    >
+                      {formatPercentage(metrics.submittalMetrics.approvalRate)}
+                    </Badge>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className={`h-2.5 rounded-full ${
+                        metrics.submittalMetrics.approvalRate >= 80
+                          ? 'bg-green-600'
+                          : metrics.submittalMetrics.approvalRate >= 60
+                          ? 'bg-orange-600'
+                          : 'bg-red-600'
+                      }`}
+                      style={{ width: `${metrics.submittalMetrics.approvalRate}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Target: ≥ 80% approval rate for optimal workflow
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-semibold mb-3">Submittal Distribution</h4>
+                  <div className="h-48 flex items-center justify-center">
+                    <Doughnut
+                      data={{
+                        labels: ['Approved', 'Pending', 'Rejected'],
+                        datasets: [
+                          {
+                            data: [
+                              metrics.submittalMetrics.approvedSubmittals,
+                              metrics.submittalMetrics.pendingSubmittals,
+                              metrics.submittalMetrics.rejectedSubmittals,
+                            ],
+                            backgroundColor: [
+                              'rgb(34, 197, 94)',
+                              'rgb(251, 146, 60)',
+                              'rgb(239, 68, 68)',
+                            ],
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                          legend: {
+                            position: 'bottom' as const,
+                          },
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Submittal Activity Trends</CardTitle>
+              <CardDescription>Submittal submissions over time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Line
+                data={{
+                  labels: trends.trends.submittals.map((d: any) => d.date),
+                  datasets: [
+                    {
+                      label: 'Submittals',
+                      data: trends.trends.submittals.map((d: any) => d.count),
+                      borderColor: 'rgb(168, 85, 247)',
+                      backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                      tension: 0.4,
+                      fill: true,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top' as const,
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        precision: 0,
+                      },
+                    },
+                  },
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="financial" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2 text-green-600" />
+                  Total Budget
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-green-600">
+                  {formatCurrency(metrics.projectHealth.totalBudget)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Across all active projects
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2 text-blue-600" />
+                  Actual Cost
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-blue-600">
+                  {formatCurrency(metrics.projectHealth.totalActualCost)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Current spending to date
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2 text-orange-600" />
+                  Variance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className={`text-3xl font-bold ${
+                    metrics.projectHealth.budgetVariance > 0 ? 'text-red-600' : 'text-green-600'
+                  }`}
+                >
+                  {formatCurrency(
+                    metrics.projectHealth.totalActualCost - metrics.projectHealth.totalBudget
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {metrics.projectHealth.budgetVariance > 0 ? 'Over' : 'Under'} budget by{' '}
+                  {formatPercentage(Math.abs(metrics.projectHealth.budgetVariance))}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Change Order Financial Impact</CardTitle>
+                <CardDescription>Cost analysis of change orders</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                    <span className="text-sm font-medium">Total Change Orders</span>
+                    <span className="text-xl font-bold text-orange-600">
+                      {metrics.changeOrderMetrics.totalChangeOrders}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-sm font-medium">Total Cost Impact</span>
+                    <span className="text-xl font-bold text-blue-600">
+                      {formatCurrency(metrics.changeOrderMetrics.totalCost)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-sm font-medium">Approved Cost</span>
+                    <span className="text-xl font-bold text-green-600">
+                      {formatCurrency(metrics.changeOrderMetrics.approvedCost)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                    <span className="text-sm font-medium">Pending Cost</span>
+                    <span className="text-xl font-bold text-yellow-600">
+                      {formatCurrency(metrics.changeOrderMetrics.pendingCost)}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Budget Performance by Project</CardTitle>
+                <CardDescription>Top projects by budget variance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {metrics.projectHealth.projectsByStatus.slice(0, 5).map((project: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{project.status}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {project.count} project{project.count !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <Badge variant="outline">{project.count}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Change Order Cost Trends</CardTitle>
+              <CardDescription>Change order cost impact over time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Bar
+                data={{
+                  labels: trends.trends.changeOrders.map((d: any) => d.date),
+                  datasets: [
+                    {
+                      label: 'Change Order Count',
+                      data: trends.trends.changeOrders.map((d: any) => d.count),
+                      backgroundColor: 'rgba(251, 146, 60, 0.5)',
+                      borderColor: 'rgb(251, 146, 60)',
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top' as const,
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        precision: 0,
+                      },
+                    },
+                  },
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );

@@ -1,0 +1,33 @@
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{titlesec}
+
+% Define corporate colors
+\definecolor{buildosblue}{RGB}{30,64,175}
+\definecolor{buildosgray}{RGB}{71,85,105}
+
+% Section formatting
+\titleformat{\section}
+  {\color{buildosblue}\Large\bfseries}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\color{buildosgray}\large\bfseries}
+  {\thesubsection}{1em}{}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{buildosgray}\small\leftmark}
+\fancyhead[R]{\color{buildosgray}\small BuildOS Platform}
+\fancyfoot[C]{\color{buildosgray}\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+% Hyperlink colors
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=buildosblue,
+    urlcolor=buildosblue,
+    citecolor=buildosblue
+}

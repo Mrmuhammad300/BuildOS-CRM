@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { NotificationCenter } from './notification-center';
 import {
   HardHat,
   LayoutDashboard,
@@ -100,7 +101,10 @@ export function DashboardNav() {
           </div>
 
           {/* User Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            {/* Notification Center */}
+            <NotificationCenter />
+
             {/* Mobile menu button */}
             <Button
               variant="ghost"

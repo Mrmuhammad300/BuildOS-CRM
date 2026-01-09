@@ -17,6 +17,8 @@ import {
   Plus,
   ArrowRight,
   Calculator,
+  BarChart3,
+  Activity,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -316,8 +318,152 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/analytics">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+              <CardContent className="p-6">
+                <BarChart3 className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">Analytics</h3>
+                <p className="text-sm text-gray-600">View insights and metrics</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </motion.div>
+
+      {/* Recent Activity Feed */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center">
+                  <Activity className="w-5 h-5 mr-2" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription>Latest updates across all projects</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/analytics">View All</Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <RecentActivityFeed />
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}
+
+// Activity Feed Component
+function RecentActivityFeed() {
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    try {
+      const response = await fetch('/api/activities?limit=10');
+      if (response.ok) {
+        const data = await response.json();
+        setActivities(data.activities || []);
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
+  };
+
+  const getActivityIcon = (type: string) => {
+    const icons: Record<string, any> = {
+      PROJECT_CREATED: FolderKanban,
+      PROJECT_UPDATED: FolderKanban,
+      RFI_SUBMITTED: MessageSquare,
+      RFI_RESPONSE_ADDED: MessageSquare,
+      SUBMITTAL_SUBMITTED: FileText,
+      CHANGE_ORDER_CREATED: DollarSign,
+      PUNCH_ITEM_CREATED: AlertCircle,
+      DAILY_REPORT_SUBMITTED: FileText,
+      DOCUMENT_UPLOADED: FileText,
+    };
+    return icons[type] || Activity;
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-start space-x-3 animate-pulse">
+            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
+        <p>No recent activity</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {activities.map((activity: any) => {
+        const Icon = getActivityIcon(activity.type);
+        return (
+          <div key={activity.id} className="flex items-start space-x-3 pb-4 border-b last:border-0">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <Icon className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-900">
+                <span className="font-medium">
+                  {activity.user.firstName} {activity.user.lastName}
+                </span>{' '}
+                {activity.description}
+              </p>
+              <div className="flex items-center space-x-2 mt-1">
+                {activity.project && (
+                  <Badge variant="secondary" className="text-xs">
+                    {activity.project.name}
+                  </Badge>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  {formatTimeAgo(activity.createdAt)}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

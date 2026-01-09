@@ -122,6 +122,19 @@ model User {
   accountingIntegrations  AccountingIntegration[]
   roiCalculations         ROICalculation[]
   
+  // Notification & Activity Relations
+  notifications           Notification[]
+  notificationPreferences NotificationPreference?
+  activities              Activity[]
+  
+  // Time Tracking & Labor Relations
+  crewMemberships         CrewMember[]
+  timeEntries             TimeEntry[]
+  timeEntriesApproved     TimeEntry[]           @relation("TimeEntryApprover")
+  
+  // Material Management Relations
+  materialRequisitions    MaterialRequisition[]
+  
   // NextAuth fields
   properties            Property[]
   accounts          Account[]
@@ -175,6 +188,12 @@ model Project {
   documentAnalyses    DocumentAnalysis[]
   aiProjectPlan       AIProjectPlan?
   roiCalculations     ROICalculation[]
+  
+  // Activity & Tracking Relations
+  activities          Activity[]
+  timeEntries         TimeEntry[]
+  equipment           Equipment[]           @relation("EquipmentCurrentProject")
+  materialRequisitions MaterialRequisition[]
 }
 
 model ProjectTeam {
@@ -1073,5 +1092,417 @@ model ROICalculation {
   @@index([projectId])
   @@index([userId])
   @@index([createdAt])
+}
+
+// ==============================
+// Notification System
+// ==============================
+
+enum NotificationType {
+  RFI_RESPONSE
+  RFI_ASSIGNED
+  RFI_STATUS_CHANGE
+  SUBMITTAL_RESPONSE
+  SUBMITTAL_STATUS_CHANGE
+  SUBMITTAL_ASSIGNED
+  CHANGE_ORDER_APPROVED
+  CHANGE_ORDER_REJECTED
+  CHANGE_ORDER_SUBMITTED
+  PUNCH_ITEM_ASSIGNED
+  PUNCH_ITEM_COMPLETED
+  PUNCH_ITEM_VERIFIED
+  DAILY_REPORT_SUBMITTED
+  DOCUMENT_UPLOADED
+  DESIGN_TASK_COMPLETED
+  MENTION
+  SYSTEM_ALERT
+}
+
+enum NotificationCategory {
+  RFI
+  SUBMITTAL
+  CHANGE_ORDER
+  PUNCH_ITEM
+  DAILY_REPORT
+  DOCUMENT
+  DESIGN
+  SYSTEM
+}
+
+model Notification {
+  id              String              @id @default(cuid())
+  
+  // User Reference
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notification Details
+  type            NotificationType
+  category        NotificationCategory
+  title           String
+  message         String              @db.Text
+  
+  // Linked Entity (polymorphic reference)
+  entityType      String?             // e.g., "RFI", "Submittal", "ChangeOrder"
+  entityId        String?             // ID of the related entity
+  
+  // Metadata
+  actionUrl       String?             // Link to navigate to
+  isRead          Boolean             @default(false)
+  readAt          DateTime?
+  
+  // Email Notification Status
+  emailSent       Boolean             @default(false)
+  emailSentAt     DateTime?
+  
+  // Timestamps
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([category])
+}
+
+model NotificationPreference {
+  id                        String    @id @default(cuid())
+  
+  // User Reference
+  userId                    String    @unique
+  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Email Notification Preferences
+  emailRfiResponse          Boolean   @default(true)
+  emailRfiAssigned          Boolean   @default(true)
+  emailSubmittalResponse    Boolean   @default(true)
+  emailSubmittalAssigned    Boolean   @default(true)
+  emailChangeOrderApproved  Boolean   @default(true)
+  emailPunchItemAssigned    Boolean   @default(true)
+  emailDailyReportSubmitted Boolean   @default(false)
+  emailDocumentUploaded     Boolean   @default(false)
+  emailMentions             Boolean   @default(true)
+  
+  // In-App Notification Preferences
+  inAppAll                  Boolean   @default(true)
+  
+  // Digest Preferences
+  enableDailyDigest         Boolean   @default(false)
+  dailyDigestTime           String?   // e.g., "08:00"
+  
+  // Timestamps
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+}
+
+// ==============================
+// Activity Feed
+// ==============================
+
+enum ActivityType {
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  PROJECT_STATUS_CHANGED
+  RFI_SUBMITTED
+  RFI_RESPONSE_ADDED
+  RFI_STATUS_CHANGED
+  SUBMITTAL_SUBMITTED
+  SUBMITTAL_APPROVED
+  SUBMITTAL_REJECTED
+  CHANGE_ORDER_CREATED
+  CHANGE_ORDER_APPROVED
+  PUNCH_ITEM_CREATED
+  PUNCH_ITEM_COMPLETED
+  DAILY_REPORT_SUBMITTED
+  DOCUMENT_UPLOADED
+  DESIGN_REQUEST_CREATED
+  USER_JOINED_PROJECT
+}
+
+model Activity {
+  id              String        @id @default(cuid())
+  
+  // User who performed the action
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Project Reference (optional)
+  projectId       String?
+  project         Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Activity Details
+  type            ActivityType
+  description     String        @db.Text
+  
+  // Linked Entity (polymorphic reference)
+  entityType      String?       // e.g., "RFI", "Submittal", "ChangeOrder"
+  entityId        String?       // ID of the related entity
+  
+  // Metadata
+  metadata        Json?         // Additional data (e.g., old/new values)
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+// ==============================
+// Time Tracking & Labor Management
+// ==============================
+
+enum TimeEntryStatus {
+  Draft
+  Submitted
+  Approved
+  Rejected
+}
+
+model Crew {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?       @db.Text
+  
+  // Skills & Certifications
+  skills          String[]      // Array of skill names
+  
+  // Relations
+  members         CrewMember[]
+  timeEntries     TimeEntry[]
+  
+  // Status
+  isActive        Boolean       @default(true)
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@index([isActive])
+}
+
+model CrewMember {
+  id              String        @id @default(cuid())
+  
+  // Crew Reference
+  crewId          String
+  crew            Crew          @relation(fields: [crewId], references: [id], onDelete: Cascade)
+  
+  // User Reference
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Role in crew
+  role            String        // e.g., "Foreman", "Carpenter", "Laborer"
+  hourlyRate      Float?
+  
+  // Status
+  isActive        Boolean       @default(true)
+  joinedAt        DateTime      @default(now())
+  leftAt          DateTime?
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@unique([crewId, userId])
+  @@index([crewId])
+  @@index([userId])
+}
+
+model TimeEntry {
+  id              String            @id @default(cuid())
+  
+  // User Reference
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Project Reference
+  projectId       String
+  project         Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Crew Reference (optional)
+  crewId          String?
+  crew            Crew?             @relation(fields: [crewId], references: [id])
+  
+  // Time Details
+  date            DateTime
+  hoursWorked     Float
+  overtimeHours   Float             @default(0)
+  
+  // Work Details
+  taskDescription String            @db.Text
+  costCode        String?           // For accounting integration
+  
+  // Equipment/Tools Used
+  equipmentUsed   String[]          // Array of equipment IDs or names
+  
+  // Status & Approval
+  status          TimeEntryStatus   @default(Draft)
+  approvedById    String?
+  approvedBy      User?             @relation("TimeEntryApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+  
+  // Labor Cost (calculated)
+  laborCost       Float?
+  overtimeCost    Float?
+  
+  // Notes
+  notes           String?           @db.Text
+  
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@index([userId])
+  @@index([projectId])
+  @@index([crewId])
+  @@index([date])
+  @@index([status])
+}
+
+// ==============================
+// Equipment & Material Management
+// ==============================
+
+enum EquipmentStatus {
+  Available
+  InUse
+  Maintenance
+  OutOfService
+  Rented
+}
+
+enum OwnershipType {
+  Owned
+  Rented
+  Leased
+}
+
+model Equipment {
+  id                    String            @id @default(cuid())
+  
+  // Equipment Details
+  name                  String
+  model                 String?
+  serialNumber          String?           @unique
+  description           String?           @db.Text
+  
+  // Ownership
+  ownershipType         OwnershipType     @default(Owned)
+  purchaseDate          DateTime?
+  purchasePrice         Float?
+  rentalDailyRate       Float?
+  
+  // Status
+  status                EquipmentStatus   @default(Available)
+  
+  // Current Assignment (optional)
+  currentProjectId      String?
+  currentProject        Project?          @relation("EquipmentCurrentProject", fields: [currentProjectId], references: [id])
+  
+  // Maintenance
+  lastMaintenanceDate   DateTime?
+  nextMaintenanceDate   DateTime?
+  maintenanceIntervalDays Int?
+  maintenanceHistory    MaintenanceRecord[]
+  
+  // Usage Tracking
+  totalHoursUsed        Float             @default(0)
+  
+  // Requisitions
+  materialRequisitions  MaterialRequisition[]
+  
+  // Timestamps
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  
+  @@index([status])
+  @@index([currentProjectId])
+}
+
+model MaintenanceRecord {
+  id                String        @id @default(cuid())
+  
+  // Equipment Reference
+  equipmentId       String
+  equipment         Equipment     @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  
+  // Maintenance Details
+  maintenanceDate   DateTime
+  description       String        @db.Text
+  cost              Float?
+  
+  // Performed By
+  performedBy       String?       // Name or company
+  
+  // Next Maintenance
+  nextMaintenanceDate DateTime?
+  
+  // Timestamps
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@index([equipmentId])
+  @@index([maintenanceDate])
+}
+
+enum MaterialStatus {
+  Requested
+  Ordered
+  InTransit
+  Delivered
+  Cancelled
+}
+
+model MaterialRequisition {
+  id                  String          @id @default(cuid())
+  
+  // Project Reference
+  projectId           String
+  project             Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Requester
+  requestedById       String
+  requestedBy         User            @relation(fields: [requestedById], references: [id])
+  
+  // Material Details
+  materialName        String
+  description         String?         @db.Text
+  quantity            Float
+  unit                String          // e.g., "EA", "LF", "SF", "CY"
+  
+  // Vendor & Pricing
+  vendorName          String?
+  vendorContact       String?
+  estimatedCost       Float?
+  actualCost          Float?
+  
+  // Delivery
+  requestedDate       DateTime
+  expectedDeliveryDate DateTime?
+  actualDeliveryDate  DateTime?
+  deliveryLocation    String?
+  
+  // Status
+  status              MaterialStatus  @default(Requested)
+  
+  // Equipment Reference (if material is equipment)
+  equipmentId         String?
+  equipment           Equipment?      @relation(fields: [equipmentId], references: [id])
+  
+  // Notes
+  notes               String?         @db.Text
+  
+  // Timestamps
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  
+  @@index([projectId])
+  @@index([requestedById])
+  @@index([status])
+  @@index([requestedDate])
 }
 

@@ -119,6 +119,9 @@ export default function AnalyticsPage() {
   if (loading || !metrics || !trends) {
     return (
       <div className="space-y-6 p-6">
+        {/* Back Button - Always visible */}
+        <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
+        
         <div className="flex items-center justify-between">
           <Skeleton className="h-10 w-48" />
           <Skeleton className="h-10 w-32" />
@@ -182,8 +185,10 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Back Button */}
-      <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
+      {/* Back Button - Prominent placement */}
+      <div className="mb-2">
+        <BackButton fallbackUrl="/dashboard" label="Back to Dashboard" />
+      </div>
 
       {/* Header */}
       <div className="flex items-center justify-between">

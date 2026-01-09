@@ -22,10 +22,10 @@ export function BackButton({ fallbackUrl = '/dashboard', label = 'Back' }: BackB
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       size="sm"
       onClick={handleBack}
-      className="mb-4"
+      className="mb-4 hover:bg-accent"
     >
       <ArrowLeft className="h-4 w-4 mr-2" />
       {label}

@@ -103,7 +103,10 @@ export default function AnalyticsPage() {
     }).format(value);
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | undefined) => {
+    if (value === undefined || value === null || isNaN(value)) {
+      return '0.0%';
+    }
     return `${value.toFixed(1)}%`;
   };
 
@@ -287,9 +290,11 @@ export default function AnalyticsPage() {
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{metrics.rfiMetrics.avgResponseTimeDays.toFixed(1)} days</div>
+                <div className="text-2xl font-bold">
+                  {metrics.rfiMetrics.avgResponseTimeDays != null ? metrics.rfiMetrics.avgResponseTimeDays.toFixed(1) : '0.0'} days
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  {metrics.rfiMetrics.totalRFIs} total RFIs
+                  {metrics.rfiMetrics.totalRFIs || 0} total RFIs
                 </p>
               </CardContent>
             </Card>
@@ -538,7 +543,7 @@ export default function AnalyticsPage() {
                       <span className="text-sm font-medium">Average Response Time</span>
                     </div>
                     <span className="text-xl font-bold">
-                      {metrics.rfiMetrics.avgResponseTimeDays.toFixed(1)} days
+                      {metrics.rfiMetrics.avgResponseTimeDays != null ? metrics.rfiMetrics.avgResponseTimeDays.toFixed(1) : '0.0'} days
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -546,7 +551,7 @@ export default function AnalyticsPage() {
                       className="bg-blue-600 h-2.5 rounded-full"
                       style={{
                         width: `${Math.min(
-                          (metrics.rfiMetrics.avgResponseTimeDays / 10) * 100,
+                          ((metrics.rfiMetrics.avgResponseTimeDays || 0) / 10) * 100,
                           100
                         )}%`,
                       }}

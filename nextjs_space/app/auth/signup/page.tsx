@@ -88,7 +88,7 @@ export default function SignupPage() {
             <HardHat className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-600 mt-2 text-center">Join our Construction CRM platform</p>
+          <p className="text-gray-600 mt-2 text-center">Join BuildOS platform</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">

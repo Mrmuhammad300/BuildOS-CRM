@@ -115,7 +115,7 @@ model User {
   designRequestsAssigned  DesignRequest[]   @relation("DesignRequestAssignedTo")
   designTasksAssigned     DesignTask[]      @relation("DesignTaskAssignedTo")
   
-  // AutoBuild AI Relations
+  // BuildOS AI Relations
   documentAnalyses        DocumentAnalysis[]
   crmIntegrations         CRMIntegration[]
   aiProjectPlans          AIProjectPlan[]
@@ -169,7 +169,7 @@ model Project {
   properties          Property[]
   designRequests      DesignRequest[]
   
-  // AutoBuild AI Relations
+  // BuildOS AI Relations
   documentAnalyses    DocumentAnalysis[]
   aiProjectPlan       AIProjectPlan?
 }
@@ -408,7 +408,7 @@ model Document {
   uploadedBy    User              @relation("UploadedBy", fields: [uploadedById], references: [id])
   versions      DocumentVersion[]
   
-  // AutoBuild AI Relations
+  // BuildOS AI Relations
   analyses      DocumentAnalysis[]
 }
 
@@ -837,7 +837,7 @@ model DesignTask {
 }
 
 // ==============================
-// AutoBuild AI Features
+// BuildOS AI Features
 // ==============================
 
 enum AnalysisType {

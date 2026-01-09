@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Change Orders | Construction CRM',
+  title: 'Change Orders | BuildOS',
   description: 'Manage construction project change orders',
 };
 

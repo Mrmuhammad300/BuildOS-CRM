@@ -49,7 +49,7 @@ export default function LoginPage() {
             <HardHat className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="text-gray-600 mt-2 text-center">Sign in to your Construction CRM account</p>
+          <p className="text-gray-600 mt-2 text-center">Sign in to your BuildOS account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

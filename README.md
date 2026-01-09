@@ -1,6 +1,6 @@
-# Construction CRM Platform
+# BuildOS
 
-A comprehensive Construction Management CRM built with Next.js, Prisma, PostgreSQL, and Radix UI.
+BuildOS is an advanced construction management platform powered by AI, built with Next.js, Prisma, PostgreSQL, and Radix UI. Streamline your construction projects with intelligent automation, real-time collaboration, and comprehensive project oversight.
 
 ## 🚀 Features
 
@@ -60,7 +60,7 @@ Create `.env` file in `nextjs_space` directory:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/construction_crm"
+DATABASE_URL="postgresql://user:password@localhost:5432/buildos"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"
@@ -217,4 +217,5 @@ For issues or questions, contact the development team.
 
 ---
 
-**Built with ❤️ using Next.js and modern web technologies**
+**BuildOS - Building the Future of Construction Management**
+**Powered by AI • Built with ❤️ using Next.js and modern web technologies**

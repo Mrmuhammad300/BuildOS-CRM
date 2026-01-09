@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
-  title: 'Construction CRM Platform',
-  description: 'Comprehensive construction project management platform',
+  title: 'BuildOS - Construction Management Platform',
+  description: 'Advanced construction project management and collaboration platform powered by AI',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',

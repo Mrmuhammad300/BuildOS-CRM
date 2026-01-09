@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Submittals | Construction CRM',
+  title: 'Submittals | BuildOS',
   description: 'Manage construction submittals',
 };
 

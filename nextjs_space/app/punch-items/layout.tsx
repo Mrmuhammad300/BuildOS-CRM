@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Punch List | Construction CRM',
+  title: 'Punch List | BuildOS',
   description: 'Manage construction project punch items',
 };
 

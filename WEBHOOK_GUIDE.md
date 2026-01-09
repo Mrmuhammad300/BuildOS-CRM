@@ -1,8 +1,8 @@
-# Construction CRM Webhook Integration Guide
+# BuildOS Webhook Integration Guide
 
 ## Overview
 
-This guide explains how to integrate your Construction CRM Platform with n8n (or any other automation tool) to automatically create change orders via webhook.
+This guide explains how to integrate your BuildOS Platform with n8n (or any other automation tool) to automatically create change orders via webhook.
 
 ## Webhook Endpoint
 
